@@ -2,7 +2,6 @@
 ; Requires NSIS 3.x
 
 !include "MUI2.nsh"
-!include "EnvVarUpdate.nsh"
 
 ; Basic installer info
 !define PRODUCT_NAME "scad-format"
@@ -18,8 +17,6 @@ RequestExecutionLevel admin
 
 ; Modern UI settings
 !define MUI_ABORTWARNING
-!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\modern-install.ico"
-!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
 
 ; Pages
 !insertmacro MUI_PAGE_WELCOME
@@ -42,7 +39,7 @@ Section "Install"
     File "..\dist\scad-format.exe"
     File "..\README.md"
     File /nonfatal "..\LICENSE"
-    File /oname=example.scad-format "..\.scad-format"
+    File /oname=example.scad-format "..\.\.scad-format"
     
     ; Create uninstaller
     WriteUninstaller "$INSTDIR\uninstall.exe"
@@ -60,8 +57,10 @@ Section "Install"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\scad-format" \
         "URLInfoAbout" "${PRODUCT_WEB_SITE}"
     
-    ; Add to PATH
-    ${EnvVarUpdate} $0 "PATH" "A" "HKLM" "$INSTDIR"
+    ; Add to PATH using registry
+    ReadRegStr $0 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
+    StrCpy $0 "$0;$INSTDIR"
+    WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$0"
     
     ; Notify shell of environment change
     SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
@@ -69,9 +68,6 @@ SectionEnd
 
 ; Uninstaller section
 Section "Uninstall"
-    ; Remove from PATH
-    ${un.EnvVarUpdate} $0 "PATH" "R" "HKLM" "$INSTDIR"
-    
     ; Remove files
     Delete "$INSTDIR\scad-format.exe"
     Delete "$INSTDIR\README.md"
@@ -86,6 +82,7 @@ Section "Uninstall"
     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\scad-format"
     DeleteRegKey HKLM "Software\scad-format"
     
+    ; Note: PATH cleanup requires manual removal or a more complex script
     ; Notify shell of environment change
     SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
 SectionEnd

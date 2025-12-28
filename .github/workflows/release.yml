@@ -4,6 +4,9 @@ on:
   release:
     types: [created]
 
+permissions:
+  contents: write
+
 jobs:
   build-windows:
     name: Build Windows Executable
@@ -78,8 +81,8 @@ jobs:
     - name: Build installer
       run: |
         cd installer
-        makensis scad-format.nsi
-      shell: cmd
+        & "C:\Program Files (x86)\NSIS\makensis.exe" scad-format.nsi
+      shell: pwsh
       continue-on-error: true
     
     - name: Upload installer to Release
@@ -123,3 +126,8 @@ jobs:
           dist/*.whl
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
