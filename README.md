@@ -10,18 +10,24 @@ A code formatter for OpenSCAD files, similar to clang-format.
 - Can be used as a Python module or standalone script
 - Supports piping, in-place editing, and batch processing
 
-## Installation
+## Installation on Windows
 
-```bash
-pip install scad-format
-```
+Download Windows executable / installer from:
 
-Or install from source:
+**<https://github.com/ashleyharris-maptek-com-au/scad-format/releases>**
+
+## Installation on Linux
 
 ```bash
 git clone https://github.com/ashleyharris-maptek-com-au/scad-format
 cd scad-format
-pip install -e .
+sudo source install_linux.sh
+```
+
+## Installation as a python module
+
+```bash
+pip install scad-format
 ```
 
 ## Usage
