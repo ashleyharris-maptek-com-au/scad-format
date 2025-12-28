@@ -1,0 +1,6 @@
+# scad-format dependencies
+# No external dependencies required for core functionality
+
+# Development dependencies
+pytest>=7.0.0
+pytest-cov>=4.0.0
