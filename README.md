@@ -7,7 +7,7 @@ A code formatter for OpenSCAD files, similar to clang-format.
 - Format OpenSCAD source code with configurable style options
 - Supports `.scad-format` configuration files (clang-format style syntax)
 - Command-line interface compatible with clang-format workflows
-- Can be used as a Python module or standalone script
+- Can be used as an executable or a Python module
 - Supports piping, in-place editing, and batch processing
 
 ## Installation on Windows
