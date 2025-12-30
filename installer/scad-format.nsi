@@ -5,7 +5,7 @@
 
 ; Basic installer info
 !define PRODUCT_NAME "scad-format"
-!define PRODUCT_VERSION "0.1.0"
+!define PRODUCT_VERSION "1.0.0"
 !define PRODUCT_PUBLISHER "Ashley Harris"
 !define PRODUCT_WEB_SITE "https://github.com/ashleyharris-maptek-com-au/scad-format"
 

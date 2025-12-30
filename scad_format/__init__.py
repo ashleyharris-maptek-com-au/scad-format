@@ -15,7 +15,7 @@ from .formatter import format_code, format_file
 from .config import FormatConfig, load_config
 from .tokenizer import tokenize
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 __all__ = ["format_code", "format_file", "FormatConfig", "load_config", "tokenize"]
 
 # Convenience alias
