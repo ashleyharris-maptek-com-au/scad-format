@@ -1,5 +1,6 @@
 """Tests for the formatter."""
 
+import re
 import pytest
 from scad_format import format_code
 from scad_format.config import FormatConfig, BraceBreakingStyle, UseTabStyle, LineEndingStyle, SeparateDefinitionStyle
@@ -547,6 +548,30 @@ module base4x4(Xspots = [-160, -80, 0, 80, 160],
         config = FormatConfig(ColumnLimit=80,BreakBeforeBraces= BraceBreakingStyle.Allman)
         returnedCode = format_code(badCode, config)
 
+        assert returnedCode.strip() == code.strip()
+
+    def test_pyramid(self):
+        """Test that multi-line arrays with comments get proper continuation indent."""
+        code = """
+module smooth_pyramid() {
+    base = n_base * stone_size; // 19,000mm
+    height = n_base * stone_size; // 19,000mm
+
+    polyhedron(points = [[-base / 2, -base / 2, 0], // 0: Southwest corner
+                         [base / 2, -base / 2, 0], // 1: Southeast corner
+                         [base / 2, base / 2, 0], // 2: Northeast corner
+                         [-base / 2, base / 2, 0], // 3: Northwest corner
+                         [0, 0, height] // 4: Apex
+                         ], faces = [[0, 1, 2, 3], // Base
+                                     [0, 1, 4], // South face
+                                     [1, 2, 4], // East face
+                                     [2, 3, 4], // North face (+Y)
+                                     [3, 0, 4] // West face
+                                     ]);
+}
+        """
+        badCode = re.sub(R" +"," ",code)
+        returnedCode = format_code(badCode)
         assert returnedCode.strip() == code.strip()
 
 

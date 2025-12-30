@@ -97,7 +97,17 @@ class Formatter:
         """Emit indentation at current level."""
         if self.at_line_start:
             self.line_start_indent = self.indent_level
-            if self.indent_level > 0:
+            # If inside brackets/parens, use continuation indent aligned with opening
+            if self.bracket_columns or self.paren_columns:
+                # Use the innermost (last) alignment column
+                align_col = self.bracket_columns[-1] if self.bracket_columns else self.paren_columns[-1]
+                self._emit(' ' * align_col)
+                # Update column tracking for new line
+                if self.bracket_columns:
+                    self.bracket_columns[-1] = align_col
+                if self.paren_columns:
+                    self.paren_columns[-1] = align_col
+            elif self.indent_level > 0:
                 self._emit(self.config.get_indent_string(self.indent_level))
     
     def _current_line_length(self) -> int:
@@ -443,7 +453,9 @@ class Formatter:
         # Track parentheses
         if token.type == TokenType.LPAREN:
             self.paren_depth += 1
-            if self._needs_space_before(token, prev_token):
+            if self.at_line_start:
+                self._emit_indent()
+            elif self._needs_space_before(token, prev_token):
                 self._space()
             self._emit('(')
             # Track column position after opening paren for alignment
@@ -458,7 +470,9 @@ class Formatter:
                 self.paren_columns.pop()
             if self.paren_depth == 0:
                 self.in_for_header = False
-            if self._needs_space_before(token, prev_token):
+            if self.at_line_start:
+                self._emit_indent()
+            elif self._needs_space_before(token, prev_token):
                 self._space()
             self._emit(')')
             # Record break point after closing paren at depth 0 (between chained calls)
@@ -469,7 +483,9 @@ class Formatter:
         # Brackets
         if token.type == TokenType.LBRACKET:
             self.bracket_depth += 1
-            if self._needs_space_before(token, prev_token):
+            if self.at_line_start:
+                self._emit_indent()
+            elif self._needs_space_before(token, prev_token):
                 self._space()
             self._emit('[')
             # Track column position after opening bracket for alignment
@@ -482,7 +498,9 @@ class Formatter:
             self.bracket_depth = max(0, self.bracket_depth - 1)
             if self.bracket_columns:
                 self.bracket_columns.pop()
-            if self._needs_space_before(token, prev_token):
+            if self.at_line_start:
+                self._emit_indent()
+            elif self._needs_space_before(token, prev_token):
                 self._space()
             self._emit(']')
             return
