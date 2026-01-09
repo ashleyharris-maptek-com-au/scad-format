@@ -25,13 +25,14 @@ REM Clean previous builds
 if exist dist rmdir /s /q dist
 if exist build rmdir /s /q build
 
-REM Build the executable
+REM Build the executable with version information
 echo Building executable...
 python -m PyInstaller ^
     --onefile ^
     --name scad-format ^
     --console ^
     --clean ^
+    --version-file version_info.txt ^
     scad-format.py
 
 if errorlevel 1 (
@@ -54,6 +55,21 @@ echo Creating zip file...
 cd dist
 powershell -Command "Compress-Archive -Path 'scad-format-%VERSION%-windows' -DestinationPath 'scad-format-%VERSION%-windows.zip' -Force"
 cd ..
+
+REM Attempt code signing (non-fatal if not configured)
+echo.
+echo Attempting code signing...
+if defined SIGNPATH_API_TOKEN (
+    python scripts\sign_artifact.py dist\scad-format.exe --artifact-config executable
+    if errorlevel 1 (
+        echo WARNING: Code signing failed or not available. Continuing with unsigned executable.
+    ) else (
+        echo Code signing completed successfully.
+    )
+) else (
+    echo WARNING: SIGNPATH_API_TOKEN not set. Skipping code signing.
+    echo To enable signing, set SIGNPATH_API_TOKEN, SIGNPATH_ORGANIZATION environment variables.
+)
 
 echo.
 echo === Build complete ===

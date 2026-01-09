@@ -1,0 +1,51 @@
+# SignPath Artifact Configuration for scad-format
+# See: https://about.signpath.io/documentation/artifact-configuration
+
+version: "1.0"
+
+# Configuration for signing individual executables
+artifact-configurations:
+  - name: "executable"
+    description: "Sign the standalone Windows executable"
+    artifact:
+      pe-file:
+        path: "scad-format.exe"
+        product-name: "scad-format"
+        product-version: "${version}"
+        metadata-restrictions:
+          - attribute: "CompanyName"
+            value: "Ashley Harris"
+          - attribute: "ProductName"
+            value: "scad-format"
+
+  - name: "installer"
+    description: "Sign the Windows installer"
+    artifact:
+      pe-file:
+        path: "scad-format-*-setup.exe"
+        product-name: "scad-format"
+        product-version: "${version}"
+        metadata-restrictions:
+          - attribute: "ProductName"
+            value: "scad-format"
+
+  - name: "release-bundle"
+    description: "Sign all release artifacts"
+    artifact:
+      zip-file:
+        path: "release-artifacts.zip"
+        extract: true
+        files:
+          - pe-file:
+              path: "scad-format.exe"
+              product-name: "scad-format"
+              product-version: "${version}"
+              metadata-restrictions:
+                - attribute: "CompanyName"
+                  value: "Ashley Harris"
+                - attribute: "ProductName"
+                  value: "scad-format"
+          - pe-file:
+              path: "scad-format-*-setup.exe"
+              product-name: "scad-format"
+              product-version: "${version}"

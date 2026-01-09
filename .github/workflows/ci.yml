@@ -64,7 +64,7 @@ jobs:
     
     - name: Build executable
       run: |
-        python -m PyInstaller --onefile --name scad-format --console --clean scad-format.py
+        python -m PyInstaller --onefile --name scad-format --console --clean --version-file version_info.txt scad-format.py
     
     - name: Test executable
       run: |
