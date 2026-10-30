@@ -27,11 +27,27 @@ jobs:
     
     - name: Build executable
       run: |
-        python -m PyInstaller --onefile --name scad-format --console --clean scad-format.py
+        python -m PyInstaller --onefile --name scad-format --console --clean --version-file version_info.txt scad-format.py
     
     - name: Test executable
       run: |
         dist\scad-format.exe --help
+    
+    - name: Sign executable (non-fatal)
+      if: env.SIGNPATH_API_TOKEN != ''
+      continue-on-error: true
+      env:
+        SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+        SIGNPATH_ORGANIZATION: ${{ secrets.SIGNPATH_ORGANIZATION }}
+        SIGNPATH_PROJECT: scad-format
+        SIGNPATH_POLICY: release-signing
+      run: |
+        echo "Attempting to sign executable..."
+        python scripts/sign_artifact.py dist/scad-format.exe --artifact-config executable
+        if ($LASTEXITCODE -ne 0) {
+          Write-Warning "Code signing failed or not available. Continuing with unsigned artifact."
+        }
+      shell: pwsh
     
     - name: Create distribution package
       run: |
@@ -71,7 +87,23 @@ jobs:
     
     - name: Build executable
       run: |
-        python -m PyInstaller --onefile --name scad-format --console --clean scad-format.py
+        python -m PyInstaller --onefile --name scad-format --console --clean --version-file version_info.txt scad-format.py
+    
+    - name: Sign executable (non-fatal)
+      if: env.SIGNPATH_API_TOKEN != ''
+      continue-on-error: true
+      env:
+        SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+        SIGNPATH_ORGANIZATION: ${{ secrets.SIGNPATH_ORGANIZATION }}
+        SIGNPATH_PROJECT: scad-format
+        SIGNPATH_POLICY: release-signing
+      run: |
+        echo "Attempting to sign executable..."
+        python scripts/sign_artifact.py dist/scad-format.exe --artifact-config executable
+        if ($LASTEXITCODE -ne 0) {
+          Write-Warning "Code signing failed or not available. Continuing with unsigned artifact."
+        }
+      shell: pwsh
     
     - name: Install NSIS
       run: |
@@ -84,6 +116,25 @@ jobs:
         & "C:\Program Files (x86)\NSIS\makensis.exe" scad-format.nsi
       shell: pwsh
       continue-on-error: true
+    
+    - name: Sign installer (non-fatal)
+      if: env.SIGNPATH_API_TOKEN != ''
+      continue-on-error: true
+      env:
+        SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+        SIGNPATH_ORGANIZATION: ${{ secrets.SIGNPATH_ORGANIZATION }}
+        SIGNPATH_PROJECT: scad-format
+        SIGNPATH_POLICY: release-signing
+      run: |
+        $installer = Get-ChildItem -Path dist -Filter "scad-format-*-setup.exe" | Select-Object -First 1
+        if ($installer) {
+          echo "Attempting to sign installer: $($installer.FullName)"
+          python scripts/sign_artifact.py $installer.FullName --artifact-config installer
+          if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Installer signing failed or not available. Continuing with unsigned installer."
+          }
+        }
+      shell: pwsh
     
     - name: Upload installer to Release
       uses: softprops/action-gh-release@v2

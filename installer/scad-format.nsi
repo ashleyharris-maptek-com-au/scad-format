@@ -21,6 +21,12 @@ RequestExecutionLevel admin
 ; Pages
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\LICENSE"
+!define MUI_PAGE_HEADER_TEXT "Privacy Policy"
+!define MUI_PAGE_HEADER_SUBTEXT "Please review the privacy policy before installing ${PRODUCT_NAME}."
+!define MUI_LICENSEPAGE_TEXT_TOP "Privacy Policy - This program does not collect any user data."
+!define MUI_LICENSEPAGE_TEXT_BOTTOM "Click Next to continue with the installation."
+!define MUI_LICENSEPAGE_BUTTON "Next >"
+!insertmacro MUI_PAGE_LICENSE "PRIVACY.txt"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
@@ -39,6 +45,7 @@ Section "Install"
     File "..\dist\scad-format.exe"
     File "..\README.md"
     File /nonfatal "..\LICENSE"
+    File "..\SECURITY.md"
     File /oname=example.scad-format "..\.\.scad-format"
     
     ; Create uninstaller
@@ -72,6 +79,7 @@ Section "Uninstall"
     Delete "$INSTDIR\scad-format.exe"
     Delete "$INSTDIR\README.md"
     Delete "$INSTDIR\LICENSE"
+    Delete "$INSTDIR\SECURITY.md"
     Delete "$INSTDIR\example.scad-format"
     Delete "$INSTDIR\uninstall.exe"
     

@@ -161,6 +161,16 @@ pytest
 pytest --cov=scad_format
 ```
 
+## Code Signing Policy
+
+Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+- **Committers and reviewers**: [Ashley Harris](https://github.com/ashleyharris-maptek-com-au)
+- **Approvers**: [Ashley Harris](https://github.com/ashleyharris-maptek-com-au)
+- **Privacy policy**: See [SECURITY.md](SECURITY.md#privacy-policy) - This program will not transfer any information to other networked systems unless specifically requested by the user.
+
+For full security information, see [SECURITY.md](SECURITY.md).
+
 ## License
 
 MIT License

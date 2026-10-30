@@ -1,0 +1,30 @@
+PRIVACY POLICY FOR SCAD-FORMAT
+==============================
+
+This program will not transfer any information to other networked systems 
+unless specifically requested by the user or the person installing or 
+operating it.
+
+scad-format is a local code formatting tool that:
+
+  * Processes files entirely on your local machine
+  * Does not collect any user data
+  * Does not make any network connections
+  * Does not contain telemetry or analytics
+  * Does not send crash reports
+
+Third-Party Components
+----------------------
+scad-format uses the following open source dependencies, none of which 
+collect user data when used as part of this application:
+
+  * Python standard library
+  * PyInstaller (build-time only)
+
+Code Signing
+------------
+Free code signing provided by SignPath.io, certificate by SignPath Foundation.
+https://signpath.org
+
+For full security information, see SECURITY.md in the installation directory
+or visit: https://github.com/ashleyharris-maptek-com-au/scad-format
