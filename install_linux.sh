@@ -40,7 +40,7 @@ check_python() {
     elif command -v python &> /dev/null; then
         PYTHON_CMD="python"
     else
-        print_error "Python is not installed. Please install Python 3.8 or later."
+        print_error "Python is not installed. Please install Python 3.11 or later."
         exit 1
     fi
     
@@ -49,8 +49,8 @@ check_python() {
     MAJOR=$(echo $VERSION | cut -d. -f1)
     MINOR=$(echo $VERSION | cut -d. -f2)
     
-    if [ "$MAJOR" -lt 3 ] || ([ "$MAJOR" -eq 3 ] && [ "$MINOR" -lt 8 ]); then
-        print_error "Python 3.8 or later is required. Found: Python $VERSION"
+    if [ "$MAJOR" -lt 3 ] || ([ "$MAJOR" -eq 3 ] && [ "$MINOR" -lt 11 ]); then
+        print_error "Python 3.11 or later is required. Found: Python $VERSION"
         exit 1
     fi
     

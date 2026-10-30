@@ -2,6 +2,8 @@
 
 A code formatter for OpenSCAD files, similar to clang-format.
 
+Requires Python 3.11 or later when running from source or installing as a Python module.
+
 ## Features
 
 - Format OpenSCAD source code with configurable style options

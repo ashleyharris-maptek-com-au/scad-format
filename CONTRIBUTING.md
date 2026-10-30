@@ -79,7 +79,7 @@ To require tests to pass before merging PRs:
 
 The GitHub Actions workflow (`.github/workflows/ci.yml`) automatically:
 
-1. **Tests** - Runs on every push/PR across Python 3.8-3.12 on Linux
+1. **Tests** - Runs on every push/PR across Python 3.11-3.14 on Linux
 2. **Windows Build** - Creates the standalone executable
 3. **Windows Installer** - Builds the NSIS installer (if NSIS available)
 4. **PyPI Packages** - Builds sdist and wheel, validates with twine
