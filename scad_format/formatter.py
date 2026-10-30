@@ -291,7 +291,7 @@ class Formatter:
                                                            TokenType.COMMA, TokenType.ASSIGNMENT,
                                                            TokenType.OPERATOR, TokenType.COLON,
                                                            TokenType.QUESTION):
-                return False
+                return self.config.SpaceAroundOperators if prev_token.type == TokenType.OPERATOR else False
             return self.config.SpaceAroundOperators
         
         if prev_token.type == TokenType.OPERATOR:
@@ -301,9 +301,9 @@ class Formatter:
                 return False
             # After unary minus - check if the minus was after something that makes it unary
             if prev_token.value == '-':
-                # Look at what's before the minus in the output
-                line = ''.join(self.current_line).rstrip()
-                if line.endswith(('=', '(', '[', ',', ':', '?', '+', '-', '*', '/', '%', '<', '>', '&', '|')):
+                # Inspect the expression before the minus, excluding the minus itself.
+                line = ''.join(self.current_line).rstrip()[:-1].rstrip()
+                if not line or line.endswith(('=', '(', '[', ',', ':', '?', '+', '-', '*', '/', '%', '<', '>', '&', '|')):
                     return False
             return self.config.SpaceAroundOperators
         
@@ -360,6 +360,18 @@ class Formatter:
     
     def _format_token(self, token: Token, prev_token: Optional[Token], next_token: Optional[Token]):
         """Format a single token."""
+
+        # Include/use directives end at the path, with an optional semicolon
+        # and trailing comments kept on the same line.
+        if self.pending_newline and token.type != TokenType.NEWLINE:
+            trailing_comment = (
+                token.type in (TokenType.COMMENT_LINE, TokenType.COMMENT_BLOCK)
+                and prev_token is not None
+                and token.line == prev_token.line + prev_token.value.count('\n')
+            )
+            if token.type != TokenType.SEMICOLON and not trailing_comment:
+                self._finish_line()
+            self.pending_newline = token.type == TokenType.COMMENT_BLOCK
         
         # Preserve empty lines from source (up to MaxEmptyLinesToKeep)
         empty_lines = getattr(token, 'empty_lines_before', 0)
@@ -395,6 +407,15 @@ class Formatter:
         
         if token.type == TokenType.NEWLINE:
             # Only emit if after line comment
+            return
+
+        if token.type == TokenType.INCLUDE_PATH:
+            if self.at_line_start:
+                self._emit_indent()
+            else:
+                self._space()
+            self._emit(token.value)
+            self.pending_newline = True
             return
         
         # Track for/let header for semicolon handling

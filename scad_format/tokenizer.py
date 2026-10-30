@@ -15,6 +15,7 @@ class TokenType(Enum):
     # Literals
     NUMBER = auto()
     STRING = auto()
+    INCLUDE_PATH = auto()
     BOOLEAN = auto()
     UNDEF = auto()
     
@@ -109,6 +110,8 @@ OPERATORS = [
     '<', '>', '+', '-', '*', '/', '%', '^', '!',
 ]
 
+INCLUDE_PATH_PATTERN = re.compile(r'<[^\r\n>]*>')
+
 
 class Tokenizer:
     """Tokenizes OpenSCAD source code."""
@@ -177,6 +180,19 @@ class Tokenizer:
             value = self.source[start_pos:self.pos]
             self._add_token(TokenType.WHITESPACE, value, start_line, start_column)
             return
+
+        # Include/use paths are literal filenames, not expressions.
+        if char == '<':
+            previous = next((token for token in reversed(self.tokens)
+                             if token.type not in (TokenType.WHITESPACE, TokenType.NEWLINE,
+                                                   TokenType.COMMENT_LINE, TokenType.COMMENT_BLOCK)), None)
+            if previous and previous.type == TokenType.KEYWORD and previous.value in ('include', 'use'):
+                match = INCLUDE_PATH_PATTERN.match(self.source, start_pos)
+                if match:
+                    while self.pos < match.end():
+                        self._advance()
+                    self._add_token(TokenType.INCLUDE_PATH, match.group(), start_line, start_column)
+                    return
         
         # Line comment
         if char == '/' and self._peek() == '/':

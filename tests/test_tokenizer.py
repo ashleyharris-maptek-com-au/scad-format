@@ -196,3 +196,27 @@ class TestTokenizer:
         
         assert tokens[0].type == TokenType.MODIFIER
         assert tokens[0].value == "#"
+
+    @pytest.mark.parametrize("keyword", ["include", "use"])
+    @pytest.mark.parametrize("path", ["core.scad", "../lib/my-parts.v2.scad", r"C:\parts\my library.scad",
+                                      "lib/a+b[1];#%.scad", "lib//part.scad"])
+    def test_include_path_is_literal(self, keyword, path):
+        source = f"{keyword} <{path}>\nN=4;"
+        tokens = tokenize(source)
+        paths = [token for token in tokens if token.type == TokenType.INCLUDE_PATH]
+        assert len(paths) == 1
+        assert paths[0].value == f"<{path}>"
+        assert (paths[0].line, paths[0].column) == (1, len(keyword) + 2)
+        following = next(token for token in tokens if token.value == "N")
+        assert (following.line, following.column) == (2, 1)
+
+    def test_comparisons_are_not_include_paths(self):
+        tokens = tokenize("x = a < b && c > d;")
+        assert not any(token.type == TokenType.INCLUDE_PATH for token in tokens)
+        assert [token.value for token in tokens if token.type == TokenType.OPERATOR] == ["<", "&&", ">"]
+
+    def test_unterminated_include_path_does_not_consume_following_line(self):
+        tokens = tokenize("include <broken.scad\nx = a > b;")
+        assert not any(token.type == TokenType.INCLUDE_PATH for token in tokens)
+        assert any(token.type == TokenType.NEWLINE for token in tokens)
+        assert any(token.value == "x" and token.line == 2 for token in tokens)

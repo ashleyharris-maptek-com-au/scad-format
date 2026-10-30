@@ -301,8 +301,7 @@ class TestEdgeCases:
         """Include and use statements."""
         code = 'include<file.scad>;use<other.scad>;'
         result = format_code(code)
-        assert "include" in result
-        assert "use" in result
+        assert result == "include <file.scad>;\nuse <other.scad>;\n"
     
     def test_unary_minus(self):
         """Unary minus is handled correctly."""
@@ -327,6 +326,65 @@ class TestEdgeCases:
         code = "module empty() {}"
         result = format_code(code)
         assert "module empty()" in result
+
+
+class TestIncludeUseFormatting:
+    @pytest.mark.parametrize("keyword", ["include", "use"])
+    @pytest.mark.parametrize("semicolon", ["", ";"])
+    @pytest.mark.parametrize("separator", ["", "\n", "\n\n"])
+    def test_directive_ends_before_following_statement(self, keyword, semicolon, separator):
+        code = f"{keyword}<core.scad>{semicolon}{separator}veryWideJoiner();"
+        line_break = "\n\n" if separator == "\n\n" else "\n"
+        expected = f"{keyword} <core.scad>{semicolon}{line_break}veryWideJoiner();\n"
+        assert format_code(code) == expected
+        assert format_code(expected) == expected
+
+    def test_wide_strap_example(self):
+        code = "include <core.scad>\nN=4;\n\nveryWideStrap(N-1);"
+        expected = "include <core.scad>\nN = 4;\n\nveryWideStrap(N - 1);\n"
+        assert format_code(code) == expected
+        assert format_code(expected) == expected
+
+    @pytest.mark.parametrize("path", ["../lib/my-parts.v2.scad", r"C:\parts\my library.scad",
+                                      "lib/a+b[1];#%.scad", "lib//part.scad"])
+    def test_path_is_preserved_with_column_limit(self, path):
+        code = f"use<{path}>\ncube(1);"
+        config = FormatConfig(ColumnLimit=15, SpaceAroundOperators=False)
+        assert format_code(code, config) == f"use <{path}>\ncube(1);\n"
+
+    @pytest.mark.parametrize("comment", ["// library", "/* library */", "/* first */ /* second */",
+                                         "/* block */ // line"])
+    def test_trailing_comments(self, comment):
+        code = f"include <core.scad> {comment}\n\ncube(1);"
+        expected = f"include <core.scad> {comment}\n\ncube(1);\n"
+        assert format_code(code) == expected
+        assert format_code(expected) == expected
+
+    @pytest.mark.parametrize("comment", ["// library", "/* library */"])
+    def test_comment_on_following_line(self, comment):
+        code = f"include <core.scad>\n{comment}\ncube(1);"
+        assert format_code(code) == code + "\n"
+
+    def test_consecutive_directives_and_crlf(self):
+        code = "include<core.scad>\r\nuse<other.scad>\r\nN=4;"
+        expected = "include <core.scad>\r\nuse <other.scad>\r\nN = 4;\r\n"
+        assert format_code(code) == expected
+        assert format_code(expected) == expected
+
+
+class TestMinusSpacing:
+    @pytest.mark.parametrize("expression, expected", [
+        ("N-1", "N - 1"),
+        ("a-b", "a - b"),
+        ("-5", "-5"),
+        ("a*-b", "a * -b"),
+        ("a--b", "a - -b"),
+        ("(-b)", "(-b)"),
+    ])
+    def test_binary_and_unary_minus(self, expression, expected):
+        result = format_code(f"x={expression};")
+        assert result == f"x = {expected};\n"
+        assert format_code(result) == result
 
 
 class TestColumnLimit:
